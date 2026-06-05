@@ -31,18 +31,29 @@ namespace ProductManager.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Product product, List<IFormFile> imageFiles)
         {
-            // 1. 驗證圖片數量
             if (imageFiles != null && imageFiles.Count > 4)
             {
                 ModelState.AddModelError("Images", "最多只能上傳 4 張圖片。");
             }
 
+            // 自動產生唯一的產品編碼
+            string productCode;
+            do
+            {
+                productCode = Utils.CodeGenerator.Generate(8);
+            } while (await _context.Products.AnyAsync(p => p.ProductCode == productCode));
+
+            product.ProductCode = productCode;
+
+            // 由於 ProductCode 是在後端動態產生的，需手動移除並重新驗證 Model 狀態
+            ModelState.Remove(nameof(product.ProductCode));
+            TryValidateModel(product);
+
             if (ModelState.IsValid)
             {
                 _context.Add(product);
-                await _context.SaveChangesAsync(); // 先儲存產品以取得新產生的 ProductId
+                await _context.SaveChangesAsync();
 
-                // 2. 處理圖片儲存
                 if (imageFiles != null && imageFiles.Count > 0)
                 {
                     await SaveProductImages(product.Id, imageFiles);
@@ -52,7 +63,6 @@ namespace ProductManager.Controllers
             }
             return View(product);
         }
-
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -96,7 +106,7 @@ namespace ProductManager.Controllers
                             // 刪除實體檔案
                             var filePath = Path.Combine(_environment.WebRootPath, img.ImagePath.TrimStart('/'));
                             if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
-                            
+
                             _context.ProductImages.Remove(img);
                         }
                         await _context.SaveChangesAsync();
@@ -115,7 +125,7 @@ namespace ProductManager.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            
+
             // 若驗證失敗，重新載入既有圖片供頁面渲染
             product.Images = await _context.ProductImages.Where(img => img.ProductId == id).ToListAsync();
             return View(product);
@@ -126,42 +136,41 @@ namespace ProductManager.Controllers
         {
             var permittedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
             var uploadFolder = Path.Combine(_environment.WebRootPath, "uploads", "products");
-            
-            // 確保資料夾存在
+
             if (!Directory.Exists(uploadFolder)) Directory.CreateDirectory(uploadFolder);
 
             foreach (var file in imageFiles)
             {
-                if (file.Length == 0) continue;
+                if (file.Length == 0 || file.Length > 2 * 1024 * 1024) continue;
 
-                // A. 驗證單檔大小不可超過 2MB (2 * 1024 * 1024 bytes)
-                if (file.Length > 2 * 1024 * 1024) continue;
-
-                // B. 驗證副檔名
                 var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
                 if (string.IsNullOrEmpty(ext) || !permittedExtensions.Contains(ext)) continue;
 
-                // C. 重新命名檔案以防止重複與安全漏洞 (使用 GUID)
                 var uniqueFileName = Guid.NewGuid().ToString() + ext;
                 var filePath = Path.Combine(uploadFolder, uniqueFileName);
 
-                // D. 儲存實體檔案到 wwwroot
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await file.CopyToAsync(stream);
                 }
 
-                // E. 寫入資料庫
+                // 自動產生唯一的圖片編碼
+                string imgCode;
+                do
+                {
+                    imgCode = Utils.CodeGenerator.Generate(8);
+                } while (await _context.ProductImages.AnyAsync(pi => pi.ProductImageCode == imgCode));
+
                 var productImage = new ProductImage
                 {
                     ProductId = productId,
-                    ImagePath = $"/uploads/products/{uniqueFileName}"
+                    ImagePath = $"/uploads/products/{uniqueFileName}",
+                    ProductImageCode = imgCode // 寫入新產生的編碼
                 };
                 _context.ProductImages.Add(productImage);
             }
             await _context.SaveChangesAsync();
         }
-
         private bool ProductExists(int id) => _context.Products.Any(e => e.Id == id);
     }
 }

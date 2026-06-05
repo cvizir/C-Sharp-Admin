@@ -1,4 +1,3 @@
-// Data/AppDbContext.cs
 using Microsoft.EntityFrameworkCore;
 using ProductManager.Models;
 
@@ -10,11 +9,22 @@ namespace ProductManager.Data
         {
         }
 
-        // 代表資料庫中的 Products 資料表
         public DbSet<Product> Products { get; set; }
-
-        // 在 AppDbContext 類別內加入：
         public DbSet<ProductImage> ProductImages { get; set; }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // 將 ProductCode 設為唯一索引
+            modelBuilder.Entity<Product>()
+                .HasIndex(p => p.ProductCode)
+                .IsUnique();
+
+            // 將 ProductImageCode 設為唯一索引
+            modelBuilder.Entity<ProductImage>()
+                .HasIndex(pi => pi.ProductImageCode)
+                .IsUnique();
+        }
     }
 }
