@@ -1,0 +1,54 @@
+@model ProductManager.Models.Product
+
+<h2>編輯產品</h2>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group mb-3">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="Price" class="control-label"></label>
+                <input asp-for="Price" class="form-control" type="number" step="0.01" />
+                <span asp-validation-for="Price" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="Description" class="control-label"></label>
+                <textarea asp-for="Description" class="form-control"></textarea>
+            </div>
+            @if (Model.Images != null && Model.Images.Any())
+            {
+                <div class="form-group mb-3">
+                    <label class="control-label">目前的產品圖片 (勾選欲刪除的圖片)：</label>
+                    <div class="d-flex flex-wrap gap-3">
+                        @foreach (var img in Model.Images)
+                        {
+                            <div class="card" style="width: 100px;">
+                                <img src="@img.ImagePath" class="card-img-top" style="height: 80px; object-fit: cover;" />
+                                <div class="card-body p-1 text-center">
+                                    <input type="checkbox" name="deleteImageIds" value="@img.Id" /> 刪除
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <div class="form-group mb-3">
+                <label class="control-label">追加新圖片 (圖片總數不可超過4張)：</label>
+                <input type="file" name="imageFiles" class="form-control" multiple accept=".jpg,.jpeg,.png,.gif" />
+                <span class="text-danger">@Html.ValidationMessage("Images")</span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="更新" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">返回列表</a>
+            </div>
+        </form>
+    </div>
+</div>
