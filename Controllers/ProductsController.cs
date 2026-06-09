@@ -2,9 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProductManager.Data;
 using ProductManager.Models;
-
+using Microsoft.AspNetCore.Authorization;
 namespace ProductManager.Controllers
 {
+    [Authorize] // 需要登入才能管理管理員
     public class ProductsController : Controller
     {
         private readonly AppDbContext _context;

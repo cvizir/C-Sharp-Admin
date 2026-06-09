@@ -1,0 +1,42 @@
+@model ProductManager.Models.Admin
+
+<h2>編輯管理員：@Model.Account</h2>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            
+            <input type="hidden" name="adminCode" value="@Model.AdminCode" />
+
+            <div class="form-group mb-3">
+                <label class="control-label">登入帳號</label>
+                <input type="text" class="form-control" value="@Model.Account" disabled />
+                <span class="text-muted" style="font-size: 0.85rem;">帳號建立後不允許修改</span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label class="control-label">顯示名稱</label>
+                <input type="text" name="name" class="form-control" value="@Model.Name" />
+            </div>
+
+            <div class="form-group mb-3">
+                <label class="control-label">帳號狀態</label>
+                <select name="isShow" class="form-select">
+                    <option value="1" selected="@(Model.IsShow == 1)">啟用</option>
+                    <option value="0" selected="@(Model.IsShow == 0)">停用</option>
+                </select>
+            </div>
+
+            <div class="form-group mb-4">
+                <label class="control-label">重設密碼 <span class="text-muted">(若不修改請留空)</span></label>
+                <input type="password" name="newPassword" class="form-control" placeholder="輸入新密碼..." />
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">更新資料</button>
+                <a asp-action="Index" class="btn btn-secondary">取消</a>
+            </div>
+        </form>
+    </div>
+</div>

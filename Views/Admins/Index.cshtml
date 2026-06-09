@@ -1,0 +1,49 @@
+@model IEnumerable<ProductManager.Models.Admin>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>管理員帳號系統</h2>
+    <a asp-action="Create" class="btn btn-primary">新增帳號</a>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<table class="table table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>No.</th>
+            <th>管理員編碼</th>
+            <th>帳號 (名稱)</th>
+            <th>狀態</th>
+            <th>最後登入</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model) {
+        <tr>
+            <td>@item.No</td>
+            <td><code>@item.AdminCode</code></td>
+            <td>@item.Account (@item.Name)</td>
+            <td>
+                <span class="badge @(item.IsShow == 1 ? "bg-success" : "bg-danger")">
+                    @(item.IsShow == 1 ? "啟用" : "停用")
+                </span>
+            </td>
+            <td>@(item.LastLogin?.ToString("yyyy-MM-dd HH:mm") ?? "從未登入")</td>
+            <td>
+                <a asp-action="Edit" asp-route-adminCode="@item.AdminCode" class="btn btn-sm btn-warning">編輯</a>
+
+                <form asp-action="Delete" asp-route-adminCode="@item.AdminCode" method="post" style="display:inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('您確定要刪除管理員【@item.Account】嗎？');">
+                        刪除
+                    </button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

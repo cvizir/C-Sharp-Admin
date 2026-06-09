@@ -1,0 +1,45 @@
+@{
+    ViewData["Title"] = "新增管理員";
+}
+
+<h2>新增管理員</h2>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="form-group mb-3">
+                <label class="control-label">登入帳號</label>
+                <input type="text" name="account" class="form-control" value="@ViewBag.Account" required />
+                @Html.ValidationMessage("Account", "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group mb-3">
+                <label class="control-label">顯示名稱 (姓名/暱稱)</label>
+                <input type="text" name="name" class="form-control" value="@ViewBag.Name" />
+            </div>
+
+            <div class="form-group mb-3">
+                <label class="control-label">登入密碼</label>
+                <input type="password" name="password" class="form-control" required />
+                @Html.ValidationMessage("Password", "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group mb-4">
+                <label class="control-label">帳號狀態</label>
+                <select name="isShow" class="form-select">
+                    <option value="1">啟用 (允許登入)</option>
+                    <option value="0">停用 (禁止登入)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">儲存帳號</button>
+                <a asp-action="Index" class="btn btn-secondary">返回列表</a>
+            </div>
+        </form>
+    </div>
+</div>
